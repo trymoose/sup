@@ -114,12 +114,16 @@ func (s *singleFileFS) Open(name string) (fs.File, error) {
 	return nil, fs.ErrNotExist
 }
 
-func (s *singleFileFS) Stat() (fs.FileInfo, error) { return s, nil }
-func (s *singleFileFS) Read(b []byte) (int, error) { return s.r.Read(b) }
-func (s *singleFileFS) Close() error               { return nil }
-func (s *singleFileFS) Name() string               { return s.name }
-func (s *singleFileFS) Size() int64                { return s.r.Size() }
-func (s *singleFileFS) Mode() fs.FileMode          { return os.ModePerm }
-func (s *singleFileFS) ModTime() time.Time         { return time.Time{} }
-func (s *singleFileFS) IsDir() bool                { return false }
-func (s *singleFileFS) Sys() any                   { return nil }
+func (s *singleFileFS) Stat() (fs.FileInfo, error)                { return s, nil }
+func (s *singleFileFS) Read(b []byte) (int, error)                { return s.r.Read(b) }
+func (s *singleFileFS) Seek(off int64, whence int) (int64, error) { return s.r.Seek(off, whence) }
+func (s *singleFileFS) Close() error                              { return nil }
+func (s *singleFileFS) Name() string                              { return s.name }
+func (s *singleFileFS) Size() int64                               { return s.r.Size() }
+func (s *singleFileFS) Mode() fs.FileMode                         { return os.ModePerm }
+
+var modTime = time.Now()
+
+func (s *singleFileFS) ModTime() time.Time { return modTime }
+func (s *singleFileFS) IsDir() bool        { return false }
+func (s *singleFileFS) Sys() any           { return nil }
