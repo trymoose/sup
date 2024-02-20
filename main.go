@@ -8,6 +8,8 @@ import (
 	"runtime/debug"
 )
 
+//go:generate go run github.com/google/wire/cmd/wire@latest
+
 func main() {
 	exit := 1
 	defer func() {

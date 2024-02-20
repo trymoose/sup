@@ -12,8 +12,6 @@ import (
 	"github.com/trymoose/sup/pkg/server/upload"
 )
 
-//go:generate go run github.com/google/wire/cmd/wire@latest
-
 func NewServers(ctx context.Context) (*Servers, func(), error) {
 	panic(wire.Build(args.NewArgs, ProvideUploadServer, ProvideUIServer, ProvideServers))
 }
