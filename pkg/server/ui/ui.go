@@ -3,7 +3,6 @@ package ui
 import (
 	"bytes"
 	_ "embed"
-	"github.com/trymoose/debug"
 	"github.com/trymoose/sup/pkg/args"
 	"github.com/trymoose/sup/pkg/server/ui/files"
 	"io"
@@ -81,11 +80,9 @@ func serveStaticFile(w http.ResponseWriter, r *http.Request) bool {
 	_, fn := path.Split(r.URL.Path)
 	if d, ok := files.StaticFiles[fn]; ok {
 		slog.Info("serving file", "filename", fn)
-		if debug.Debug {
-			http.ServeFileFS(w, r, &singleFileFS{name: fn, path: filepath.Join("pkg", "server", "ui", "files")}, d.Name)
-		} else {
-			http.ServeFileFS(w, r, &singleFileFS{name: fn, r: bytes.NewReader(d.Data)}, d.Name)
-		}
+		r = r.Clone(r.Context())
+		r.URL.RawQuery = ""
+		http.ServeFileFS(w, r, &singleFileFS{name: fn, r: bytes.NewReader(d.Data)}, d.Name)
 		return true
 	}
 	return false
@@ -95,8 +92,6 @@ func serveFile(args *args.Args, w http.ResponseWriter, r *http.Request) bool {
 	dir, fn := path.Split(r.URL.Path)
 	if strings.Contains(dir, "files") {
 		slog.Info("serving file", "filename", fn)
-		r = r.Clone(r.Context())
-		r.URL.RawQuery = ""
 		http.ServeFileFS(w, r, &singleFileFS{name: fn, path: string(args.Data)}, fn)
 		return true
 	}
