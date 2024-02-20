@@ -95,6 +95,8 @@ func serveFile(args *args.Args, w http.ResponseWriter, r *http.Request) bool {
 	dir, fn := path.Split(r.URL.Path)
 	if strings.Contains(dir, "files") {
 		slog.Info("serving file", "filename", fn)
+		r = r.Clone(r.Context())
+		r.URL.RawQuery = ""
 		http.ServeFileFS(w, r, &singleFileFS{name: fn, path: string(args.Data)}, fn)
 		return true
 	}
