@@ -1,0 +1,11 @@
+{
+  "name": "sup",
+  "short_name": "sup",
+  "icons": [{
+    "src": "google-touch-icon.png",
+    "sizes": "512x512"
+  }],
+  "background_color": "#34495E",
+  "theme_color": "#2C3E50",
+  "display": "fullscreen"
+}

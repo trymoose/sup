@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>sup</title>
+    <link rel="stylesheet" href="bootstrap-icons.min.css">
+    <link href="bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="index.css">
+    <meta name="theme-color" content="#2C3E50">
+    <link rel="icon" href="favicon.svg">
+    <link rel="mask-icon" href="favicon.svg" color="#BDC3C7">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+<nav class="navbar fixed-top bg-body-secondary">
+    <div class="container-fluid">
+        <div class="navbar-brand">
+            <i class="bi bi-archive"></i>
+        </div>
+        <div class="d-flex gap-2">
+            <button id="send-button" type="button" class="btn btn-primary" onclick="sendConfirm()"><i class="bi bi-send"></i></button>
+            <button id="delete-button" type="button" class="btn btn-danger" onclick="deleteConfirm()"><i class="bi bi-trash"></i></button>
+        </div>
+    </div>
+</nav>
+
+<div class="container-sm nav-padding d-flex flex-column gap-2">
+    <div></div>
+    <ul class="list-group">
+        {{ if eq (len .Files) 0 }}
+            <li class="list-group-item list-group-item-secondary list-group-item-action">Files</li>
+        {{ else }}
+            <li class="list-group-item list-group-item-secondary list-group-item-action">
+                <input id="files-list-check" class="form-check-input me-1" type="checkbox" onchange="changeAllFiles(this.checked)">
+                <label class="form-check-label stretched-link" for="files-list-check">Files</label>
+            </li>
+        {{ end }}
+        {{ range .Files }}
+            <li class="list-group-item">
+                <input id="check-{{ . }}" class="form-check-input me-1" type="checkbox" value="" onchange="filesChanged(this.checked, '{{ . }}')">
+                <label class="form-check-label stretched-link" for="check-{{ . }}" ondblclick="openFile('{{ . }}')">{{ . }}</label>
+            </li>
+        {{ end }}
+    </ul>
+</div>
+
+<div class="modal fade" id="deleteConfirm" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="deleteConfirmLabel">Delete</h1>
+            </div>
+            <div class="modal-body">
+                <span class="h6">Are you sure you want to delete these files?</span>
+                <ul id="delete-files" class="list-group">
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="deleteFiles()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sendConfirm" tabindex="-1" aria-labelledby="sendConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="sendConfirmLabel">Send</h1>
+            </div>
+            <div class="modal-body">
+                <span class="h6">Select where you would like to send these files.</span>
+                <div class="d-flex gap-2 flex-column">
+                    <div class="list-group">
+                        <div id="files-collapse" class="list-group-item list-group-item-secondary list-group-item-action d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#send-files">
+                            Files
+                            <span id="num-files-badge" class="badge bg-primary rounded-pill"></span>
+                        </div>
+                        <div id="send-files" class="collapse">
+                        </div>
+                    </div>
+                    <div class="list-group">
+                        {{ if eq (len .Destinations) 0 }}
+                            <div class="list-group-item list-group-item-secondary list-group-item-action">Destinations</div>
+                        {{ else }}
+                            <div class="list-group-item list-group-item-secondary list-group-item-action">
+                                <input id="check-dest-Destinations" class="form-check-input me-1" type="checkbox" value="" onchange="changeAllDestinations(this.checked)">
+                                <label class="form-check-label stretched-link" for="check-dest-Destinations">Destinations</label>
+                            </div>
+                        {{ end }}
+                        {{ range .Destinations }}
+                            <div class="list-group-item">
+                                <input id="check-dest-{{ . }}" class="form-check-input me-1" type="checkbox" value="" onchange="destinationChanged(this.checked, '{{ . }}')">
+                                <label class="form-check-label stretched-link" for="check-dest-{{ . }}">{{ . }}</label>
+                            </div>
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button id="send-dialog-button" type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="sendFiles()">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3">
+    <template id="toast-template">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+            <div class="toast-header">
+                <div id="header-container" class="d-flex gap-1">
+                    <i id="error-icon" class="bi bi-ban"></i>
+                    <strong id="toast-title" class="me-auto"></strong>
+                </div>
+            </div>
+            <div id="toast-body" class="toast-body"></div>
+        </div>
+    </template>
+</div>
+
+<script src="bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script>
+function getFiles() {
+    return [{{ range .Files }}'{{ . }}',{{ end }}];
+}
+function getDestinations() {
+    return [{{ range .Destinations }}'{{ . }}',{{ end }}];
+}
+</script>
+<script src="index.js"></script>
+</body>
+</html>
